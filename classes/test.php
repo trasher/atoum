@@ -1221,7 +1221,7 @@ abstract class test implements observable, \countable
 
 					$this->testAdapterStorage->add(php\mocker::getAdapter());
 
-					$this->beforeTestMethod($this->currentMethod);
+					$this->callBeforeTestMethod($this->currentMethod);
 
 					$this->mockGenerator->testedClassIs($this->getTestedClassName());
 
@@ -1396,7 +1396,7 @@ abstract class test implements observable, \countable
 				$this->addExceptionToScore($exception);
 			}
 
-			$this->afterTestMethod($this->currentMethod);
+			$this->callAfterTestMethod($this->currentMethod);
 
 			$this->currentMethod = null;
 
@@ -1514,14 +1514,6 @@ abstract class test implements observable, \countable
 
 		return $doNotCallDefaultErrorHandler;
 	}
-
-	public function setUp() {}
-
-	public function beforeTestMethod($testMethod) {}
-
-	public function afterTestMethod($testMethod) {}
-
-	public function tearDown() {}
 
 	public static function setNamespace($namespace)
 	{
@@ -1752,10 +1744,50 @@ abstract class test implements observable, \countable
 		return $this;
 	}
 
+	private function callSetUp()
+	{
+		if (method_exists($this, 'setUp'))
+		{
+			$this->setUp();
+		}
+
+		return $this;
+	}
+
+	private function callTearDown()
+	{
+		if (method_exists($this, 'tearDown'))
+		{
+			$this->tearDown();
+		}
+
+		return $this;
+	}
+
+	private function callBeforeTestMethod($testMethod)
+	{
+		if (method_exists($this, 'beforeTestMethod'))
+		{
+			$this->beforeTestMethod($testMethod);
+		}
+
+		return $this;
+	}
+
+	private function callAfterTestMethod($testMethod)
+	{
+		if (method_exists($this, 'afterTestMethod'))
+		{
+			$this->afterTestMethod($testMethod);
+		}
+
+		return $this;
+	}
+
 	private function runEngines()
 	{
 		$this->callObservers(self::beforeSetUp);
-		$this->setUp();
+		$this->callSetUp();
 		$this->callObservers(self::afterSetUp);
 
 		while ($this->runEngine()->engines)
@@ -1884,7 +1916,7 @@ abstract class test implements observable, \countable
 	private function doTearDown()
 	{
 		$this->callObservers(self::beforeTearDown);
-		$this->tearDown();
+		$this->callTearDown();
 		$this->callObservers(self::afterTearDown);
 
 		return $this;
