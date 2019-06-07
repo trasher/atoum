@@ -689,7 +689,12 @@ class generator
 
     protected function isVoid(\reflectionMethod $method)
     {
-        return $this->hasReturnType($method) ? (string) $method->getReturnType() === 'void' : false;
+        if (!$this->hasReturnType($method)) {
+            return false;
+        }
+        $returnType = $method->getReturnType();
+        $returnTypeName = $returnType instanceof \reflectionNamedType ? $returnType->getName() : (string) $returnType;
+        return $returnTypeName === 'void';
     }
 
     protected static function isNullableParameter(\ReflectionParameter $parameter)
